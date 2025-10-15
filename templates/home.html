@@ -1,8 +1,9 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block content %}
 <div class="text-center">
-    <h1>Bienvenido a Streak</h1>
-    <p>Tu guía interactiva para alcanzar tus metas profesionales.</p>
+    <h1 class="display-5 fw-bold">Bienvenido a Streak</h1>
+    <p class="lead mt-3">Tu plataforma para desarrollo profesional, retos y oportunidades laborales.</p>
+    <a href="/vacancies/" class="btn btn-primary mt-3">Ver Vacantes</a>
+    <a href="/challenges/" class="btn btn-outline-primary mt-3">Ver Retos</a>
 </div>
 {% endblock %}

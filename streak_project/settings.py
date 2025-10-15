@@ -59,7 +59,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'streak_db',
         'USER': 'root',
-        'PASSWORD': 'tu_contraseña',
+        'PASSWORD': 'David2006*',
         'HOST': 'localhost',
         'PORT': '3306',
     }

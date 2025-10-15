@@ -1,5 +1,27 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<h1>Lista de vacantes</h1>
+<div class="card shadow-sm p-4">
+    <h2 class="text-primary mb-4">Oportunidades laborales</h2>
+    <p class="text-muted">Encuentra ofertas relevantes según tus habilidades e intereses.</p>
+
+    <div class="row">
+        {% for job in jobs %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">{{ job.title }}</h5>
+                    <p class="card-text"><strong>Empresa:</strong> {{ job.company }}</p>
+                    <p class="text-muted small">{{ job.location }}</p>
+                    <p>{{ job.description|truncatewords:15 }}</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <a href="#" class="btn btn-sm btn-outline-primary w-100">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No hay vacantes disponibles en este momento.</p>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

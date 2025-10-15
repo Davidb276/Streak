@@ -1,6 +1,33 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-<h1>Lista de Retos</h1>
-<p>Bienvenido al módulo de desafíos de Streak.</p>
+<div class="container py-4">
+    <h2 class="fw-bold mb-4 text-center text-primary">💡 Retos Disponibles</h2>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Reto: Análisis de datos con Python</h5>
+                    <p class="card-text">
+                        Demuestra tus habilidades procesando conjuntos de datos y creando visualizaciones.
+                    </p>
+                    <a href="#" class="btn btn-primary">Participar</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Reto: Optimización de algoritmos</h5>
+                    <p class="card-text">
+                        Mejora la eficiencia de un código dado y presenta tus resultados.
+                    </p>
+                    <a href="#" class="btn btn-outline-primary">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
