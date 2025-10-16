@@ -5,6 +5,7 @@ from django.db import models
 class User(AbstractUser):
     bio = models.TextField(blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    skills = models.TextField(blank=True)
     level = models.IntegerField(default=1)
     points = models.IntegerField(default=0)
 

@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'challenges',
     'ai_module',
     'notifications',
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -56,17 +57,18 @@ WSGI_APPLICATION = 'streak_project.wsgi.application'
 # Base de datos (MySQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'streak_db',
-        'USER': 'root',
-        'PASSWORD': 'David2006*',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
 # Autenticación
 AUTH_USER_MODEL = 'users.User'
+
+# URLs de login/logout
+LOGIN_REDIRECT_URL = "home"   # Página a la que va tras iniciar sesión
+LOGOUT_REDIRECT_URL = "home"  # Página a la que va tras cerrar sesión
+LOGIN_URL = "login"            # Para usar @login_required
 
 # Archivos estáticos
 STATIC_URL = '/static/'

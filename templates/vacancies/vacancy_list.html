@@ -1,21 +1,49 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="card shadow-sm p-4">
-    <h2 class="text-primary mb-4">Oportunidades laborales</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">Oportunidades laborales</h2>
+        {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'vacancies:create' %}" class="btn btn-sm btn-outline-success">
+                Crear nueva vacante
+            </a>
+        {% endif %}
+    </div>
     <p class="text-muted">Encuentra ofertas relevantes según tus habilidades e intereses.</p>
 
     <div class="row">
-        {% for job in jobs %}
+        {% for job in vacancies %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title text-primary">{{ job.title }}</h5>
-                    <p class="card-text"><strong>Empresa:</strong> {{ job.company }}</p>
-                    <p class="text-muted small">{{ job.location }}</p>
+                    <p><strong>Empresa:</strong> {{ job.company.name }}</p>
+                    {% if job.company.location %}
+                        <p class="text-muted small">{{ job.company.location }}</p>
+                    {% endif %}
                     <p>{{ job.description|truncatewords:15 }}</p>
+                    <p class="text-muted small">Publicada: {{ job.date_posted|date:"d/m/Y H:i" }}</p>
+                    <p class="text-muted small">{{ job.applicants.count }} aplicante(s)</p>
                 </div>
-                <div class="card-footer bg-white border-0">
-                    <a href="#" class="btn btn-sm btn-outline-primary w-100">Ver detalles</a>
+                <div class="card-footer bg-white border-0 d-flex flex-column gap-2">
+                    {% if user.is_authenticated %}
+                        <!-- Aplicar -->
+                        <a href="{% url 'vacancies:apply' job.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                            {% if user in job.applicants.all %}
+                                Aplicado
+                            {% else %}
+                                Aplicar
+                            {% endif %}
+                        </a>
+
+                        <!-- Editar y Borrar solo para superusuarios o staff -->
+                        {% if user.is_staff or user.is_superuser %}
+                            <a href="{% url 'vacancies:edit' job.pk %}" class="btn btn-sm btn-outline-secondary w-100">Editar</a>
+                            <a href="{% url 'vacancies:delete' job.pk %}" class="btn btn-sm btn-outline-danger w-100">Borrar</a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small">Inicia sesión para aplicar o editar vacantes</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

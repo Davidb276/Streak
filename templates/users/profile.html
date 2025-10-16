@@ -7,18 +7,30 @@
             <div class="text-center mb-3">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar" width="100" class="rounded-circle">
             </div>
-            <h3 class="text-center text-primary">{{ user.name }}</h3>
+            <h3 class="text-center text-primary">{{ user.username }}</h3>
             <p class="text-center text-muted mb-1">{{ user.role }}</p>
             <p class="text-center"><strong>Email:</strong> {{ user.email }}</p>
+
+            <!-- Botón de editar perfil solo si el usuario está autenticado -->
+            {% if request.user.is_authenticated and request.user == user %}
+                <div class="text-center my-3">
+                    <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-primary">Editar perfil</a>
+                </div>
+            {% endif %}
+
             <hr>
             <h5>Sobre mí</h5>
             <p>{{ user.bio }}</p>
             <h5 class="mt-4">Habilidades</h5>
             <ul class="list-inline">
-                {% for skill in user.skills %}
+                {% for skill in user_data.skills_list %}
                     <li class="list-inline-item badge bg-primary bg-opacity-75 text-light p-2 m-1">{{ skill }}</li>
+                {% empty %}
+                    <li class="list-inline-item text-muted">No hay habilidades agregadas</li>
                 {% endfor %}
             </ul>
+
+
         </div>
     </div>
 </div>

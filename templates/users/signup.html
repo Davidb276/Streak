@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm p-4">
+            <h2 class="text-primary mb-4">Registrarse</h2>
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Username -->
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Nombre de usuario</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="text-danger">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Correo electrónico</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="text-danger">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Bio -->
+                <div class="mb-3">
+                    <label for="id_bio" class="form-label">Biografía</label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}
+                        <div class="text-danger">{{ form.bio.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Skills -->
+                <div class="mb-3">
+                    <label for="id_skills" class="form-label">Habilidades (separadas por comas)</label>
+                    {{ form.skills }}
+                    {% if form.skills.errors %}
+                        <div class="text-danger">{{ form.skills.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Contraseña</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="text-danger">{{ form.password1.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">Confirmar contraseña</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="text-danger">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

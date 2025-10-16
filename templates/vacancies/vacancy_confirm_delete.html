@@ -1,0 +1,7 @@
+<h1>Confirmar borrado</h1>
+<p>¿Deseas eliminar la vacante "{{ vacancy }}"?</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Sí, borrar</button>
+</form>
+<a href="{% url 'vacancies:list' %}">Cancelar</a>
