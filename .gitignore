@@ -16,3 +16,7 @@ __pycache__/
 
 # Archivos de VSCode
 .vscode/
+
+openAI.env
+*.env
+.env
