@@ -19,7 +19,7 @@ def chat_view(request):
         response = get_completion(prompt)
         return JsonResponse({"response": response})
     
-    return render(request, "ai_module/chat.html")  # ✅ usa tus templates globales
+    return render(request, "ai_module/chat.html")  
 
 
 # ✍️ GENERADOR / ANALIZADOR DE TEXTO

@@ -1,33 +1,123 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-4">
-    <h2 class="fw-bold mb-4 text-center text-primary">💡 Retos Disponibles</h2>
-
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h5 class="card-title">Reto: Análisis de datos con Python</h5>
-                    <p class="card-text">
-                        Demuestra tus habilidades procesando conjuntos de datos y creando visualizaciones.
-                    </p>
-                    <a href="#" class="btn btn-primary">Participar</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h5 class="card-title">Reto: Optimización de algoritmos</h5>
-                    <p class="card-text">
-                        Mejora la eficiencia de un código dado y presenta tus resultados.
-                    </p>
-                    <a href="#" class="btn btn-outline-primary">Ver detalles</a>
-                </div>
-            </div>
-        </div>
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">🎯 Retos Personalizados</h2>
+        <p class="text-muted mb-1">Basados en tu perfil y habilidades</p>
     </div>
+
+    <!-- Información del usuario -->
+    <div class="card shadow-sm mb-4 p-3 text-center">
+        <h5 class="fw-bold mb-2">{{ request.user.username }}</h5>
+        <p class="mb-0 text-dark">
+            <strong>Nivel:</strong> <span id="user-level">{{ user_data.level }}</span> |
+            <strong>Puntos:</strong> <span id="user-points">{{ user_data.points }}</span>
+        </p>
+        <p class="mb-0 text-muted small">Habilidades: {{ user_data.skills }}</p>
+    </div>
+
+    <!-- Botón para generar retos -->
+    <div class="text-center mb-4">
+        <a href="?generate=1" class="btn btn-primary px-4">🔄 Generar nuevos retos</a>
+    </div>
+
+    <!-- Lista de retos generados -->
+    <div class="row justify-content-center">
+        {% for reto in retos %}
+        <div class="col-md-8 mb-3">
+            <div class="card shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">{{ reto.titulo }}</h5>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalReto{{ forloop.counter }}">Ver reto</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal del reto -->
+        <div class="modal fade" id="modalReto{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 shadow">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">{{ reto.titulo }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted">{{ reto.descripcion }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success btn-sm completar-reto-btn" data-id="{{ reto.session_id }}">
+                            Completar reto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-8 text-center text-muted">
+            <p>No hay retos aún. Haz clic en <strong>"Generar nuevos retos"</strong> para empezar.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Retos completados -->
+    <hr class="my-4">
+    <h4 class="text-center mb-3">🏆 Retos Completados</h4>
+    {% if retos_completados %}
+    <div class="row justify-content-center">
+        {% for reto in retos_completados %}
+        <div class="col-md-8 mb-3">
+            <div class="card shadow-sm p-3 bg-light">
+                <h5 class="fw-bold">{{ reto.challenge.title }}</h5>
+                <p class="text-muted">{{ reto.challenge.description }}</p>
+                <small>Puntos: {{ reto.score }} | Completado el: {{ reto.completed_at|date:"d/m/Y H:i" }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p class="text-center text-muted">Aún no has completado ningún reto.</p>
+    {% endif %}
 </div>
+
+<!-- Script para completar retos -->
+<script>
+document.querySelectorAll('.completar-reto-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const session_id = btn.dataset.id;
+        btn.disabled = true;
+        btn.textContent = "Completando...";
+
+        try {
+            const response = await fetch(`/challenges/completar/${session_id}/`);
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById("user-level").textContent = data.new_level;
+                document.getElementById("user-points").textContent = data.new_points;
+
+                btn.classList.remove("btn-success");
+                btn.classList.add("btn-secondary");
+                btn.textContent = "✅ Completado";
+
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(btn.closest('.modal'));
+                    modal.hide();
+                }, 800);
+
+                alert(`✅ ¡Reto completado!\nNivel: ${data.new_level}\nPuntos: ${data.new_points}`);
+            } else {
+                alert("❌ Error al completar el reto.");
+                btn.disabled = false;
+                btn.textContent = "Completar reto";
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error de conexión.");
+            btn.disabled = false;
+            btn.textContent = "Completar reto";
+        }
+    });
+});
+</script>
 {% endblock %}
