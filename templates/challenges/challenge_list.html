@@ -46,9 +46,7 @@
                         <p class="text-muted">{{ reto.descripcion }}</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-success btn-sm completar-reto-btn" data-id="{{ reto.session_id }}">
-                            Completar reto
-                        </button>
+                        <button class="btn btn-success btn-sm completar-reto-btn" data-index="{{ forloop.counter0 }}">Completar reto</button>
                     </div>
                 </div>
             </div>
@@ -68,9 +66,17 @@
         {% for reto in retos_completados %}
         <div class="col-md-8 mb-3">
             <div class="card shadow-sm p-3 bg-light">
-                <h5 class="fw-bold">{{ reto.challenge.title }}</h5>
-                <p class="text-muted">{{ reto.challenge.description }}</p>
-                <small>Puntos: {{ reto.score }} | Completado el: {{ reto.completed_at|date:"d/m/Y H:i" }}</small>
+                <h5 class="fw-bold">{{ reto.titulo }}</h5>
+
+                <!-- Botón para ver descripción -->
+                <button class="btn btn-outline-primary btn-sm mt-2" data-bs-toggle="collapse" data-bs-target="#desc{{ forloop.counter }}" aria-expanded="false">
+                    Ver detalles
+                </button>
+
+                <div class="collapse mt-2" id="desc{{ forloop.counter }}">
+                    <p class="text-muted">{{ reto.descripcion }}</p>
+                    <small>Puntos: {{ reto.score }} | Completado el: {{ reto.completed_at|date:"d/m/Y H:i" }}</small>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -84,12 +90,12 @@
 <script>
 document.querySelectorAll('.completar-reto-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-        const session_id = btn.dataset.id;
+        const index = btn.dataset.index;
         btn.disabled = true;
         btn.textContent = "Completando...";
 
         try {
-            const response = await fetch(`/challenges/completar/${session_id}/`);
+            const response = await fetch(`/challenges/completar/${index}/`);
             const data = await response.json();
 
             if (data.success) {
@@ -107,7 +113,7 @@ document.querySelectorAll('.completar-reto-btn').forEach(btn => {
 
                 alert(`✅ ¡Reto completado!\nNivel: ${data.new_level}\nPuntos: ${data.new_points}`);
             } else {
-                alert("❌ Error al completar el reto.");
+                alert("❌ Error al completar el reto: " + (data.message || ""));
                 btn.disabled = false;
                 btn.textContent = "Completar reto";
             }

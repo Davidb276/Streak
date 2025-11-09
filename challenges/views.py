@@ -2,9 +2,10 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
-import random, re
 from ai_module.openai_client import generate_text
 from .models import Challenge, UserChallenge
+import random
+import re
 
 @login_required
 def retos_personalizados(request):
@@ -17,13 +18,13 @@ def retos_personalizados(request):
         "skills_list": [s.strip() for s in user.skills.split(",")] if user.skills else []
     }
 
-    # Inicializar sesión para retos generados
-    if "retos_generados" not in request.session:
-        request.session["retos_generados"] = []
+    # Recuperar retos generados de la sesión si existen
+    retos = request.session.get("retos_generados", [])
 
-    # Generar retos nuevos
+    # Generar nuevos retos si se solicita
     if request.GET.get("generate") == "1":
         semilla = random.randint(1000, 9999)
+
         prompt = f"""
 Usuario con las siguientes características:
 - Skills: {user_data['skills']}
@@ -40,61 +41,81 @@ Reto X: [título corto en una línea]
 Solo escribe los tres retos.
 Semilla aleatoria: {semilla}
 """
+
         retos_generados = generate_text(prompt, mode="descripcion")
+
+        # Limpieza de texto
         retos_generados = re.sub(r'(?i)(vacante|proyecto|rol|introducción|objetivo):.*$', '', retos_generados, flags=re.MULTILINE)
         bloques = re.split(r'(?=Reto\s*\d*[:\-]|Desaf[ií]o\s*\d*[:\-])', retos_generados, flags=re.IGNORECASE)
-        retos_limpios = [b.strip() for b in bloques if b.strip().lower().startswith(("reto", "desaf"))]
+        retos = [b.strip() for b in bloques if b.strip().lower().startswith(("reto", "desaf"))][:3]
 
-        # Guardar en sesión
-        request.session["retos_generados"] = []
-        for idx, bloque in enumerate(retos_limpios[:3]):
+        # Extraer título y descripción
+        retos_limpios = []
+        for bloque in retos:
             lineas = bloque.split("\n", 1)
             titulo = lineas[0].strip()
             descripcion = lineas[1].strip() if len(lineas) > 1 else "Descripción no disponible."
-            request.session["retos_generados"].append({
-                "session_id": str(idx),
-                "titulo": titulo,
-                "descripcion": descripcion
-            })
-        request.session.modified = True
+            retos_limpios.append({"titulo": titulo, "descripcion": descripcion})
+        retos = retos_limpios
 
-    retos = request.session.get("retos_generados", [])
-    retos_completados = UserChallenge.objects.filter(user=user, completed=True)
+        # Guardar en sesión
+        request.session["retos_generados"] = retos
+
+    # Retos completados por el usuario
+    retos_completados = UserChallenge.objects.filter(user=user, completed=True).select_related('challenge')
+
+    # Mapear los datos para la plantilla
+    retos_completados_data = []
+    for uc in retos_completados:
+        retos_completados_data.append({
+            "titulo": uc.challenge.title,
+            "descripcion": uc.challenge.description,
+            "score": uc.score,
+            "completed_at": uc.completed_at
+        })
 
     return render(request, "challenges/challenge_list.html", {
         "user_data": user_data,
         "retos": retos,
-        "retos_completados": retos_completados
+        "retos_completados": retos_completados_data
     })
 
 
 @login_required
-def completar_reto(request, session_id):
+def completar_reto(request, reto_index):
     user = request.user
-    retos = request.session.get("retos_generados", [])
-    reto = next((r for r in retos if r["session_id"] == session_id), None)
-    if not reto:
-        return JsonResponse({"success": False})
-
     try:
-        puntos_por_reto = 10
-        user.points += puntos_por_reto
-        user.level = user.points // 100 + 1
-        user.save()
+        # Recuperar reto de la sesión
+        retos = request.session.get("retos_generados", [])
+        if not retos or int(reto_index) >= len(retos):
+            return JsonResponse({"success": False, "message": "Reto no encontrado"})
 
-        # Guardar reto completado en DB
-        ch, _ = Challenge.objects.get_or_create(title=reto["titulo"], defaults={"description": reto["descripcion"], "points": puntos_por_reto})
-        UserChallenge.objects.get_or_create(user=user, challenge=ch, defaults={
-            "completed": True,
-            "score": puntos_por_reto,
-            "completed_at": timezone.now()
-        })
+        reto_data = retos[int(reto_index)]
+        titulo = reto_data["titulo"]
+        descripcion = reto_data["descripcion"]
+
+        # Crear Challenge si no existe
+        challenge, created = Challenge.objects.get_or_create(title=titulo, defaults={"description": descripcion, "points": 10})
+
+        # Registrar UserChallenge
+        user_challenge, created_uc = UserChallenge.objects.get_or_create(user=user, challenge=challenge)
+        if not user_challenge.completed:
+            user_challenge.completed = True
+            user_challenge.score = challenge.points
+            user_challenge.completed_at = timezone.now()
+            user_challenge.save()
+
+            # Actualizar puntos y nivel del usuario
+            user.points += challenge.points
+            user.level = user.points // 100 + 1
+            user.save()
 
         return JsonResponse({
             "success": True,
             "new_points": user.points,
             "new_level": user.level
         })
+
     except Exception as e:
         print("Error completando reto:", e)
-        return JsonResponse({"success": False})
+        return JsonResponse({"success": False, "message": str(e)})
