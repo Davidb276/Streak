@@ -1,6 +1,7 @@
 # streak_project/settings.py
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,6 +17,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
+    
     # Apps del proyecto
     'users',
     'vacancies',
@@ -74,17 +77,19 @@ LOGIN_URL = "login"            # Para usar @login_required
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Configuración de email (ejemplo con Gmail)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'tu_correo@gmail.com'
-EMAIL_HOST_PASSWORD = 'tu_contraseña'
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# 📬 Configuración de envío de correos con SendGrid
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+load_dotenv()
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+SENDGRID_ECHO_TO_STDOUT = True
 
-LANGUAGE_CODE = 'es'
-TIME_ZONE = 'America/Bogota'
-USE_I18N = True
-USE_TZ = True
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+# ⏰ Tareas programadas (cron jobs)
+CRONJOBS = [
+    # Ejecutar cada día a las 9:00 a.m.
+    ('0 9 * * *', 'notifications.email_service.enviar_recordatorios')
+]
+
