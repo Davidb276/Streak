@@ -39,6 +39,7 @@ Reto X: [título corto en una línea]
 
 ❌ No incluyas introducción, títulos como “Vacante” o “Proyecto”, ni explicaciones extra.
 Solo escribe los tres retos.
+❌ No uses numeración (no pongas Reto 1, Reto 2, etc.).
 Semilla aleatoria: {semilla}
 """
 

@@ -86,6 +86,22 @@ def get_completion_hf(prompt: str) -> str:
         return f"⚠️ No se pudo conectar con Hugging Face: {e}"
 
 
+# === Limpieza de Markdown ===
+import re
+
+def clean_markdown(text: str) -> str:
+    """
+    Elimina formato Markdown (**, *, -, etc.) y deja texto plano limpio.
+    """
+    text = re.sub(r"(\*\*|\*)", "", text)
+    text = re.sub(r"(?m)^\s*-\s*", "", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"#{1,6}\s*", "", text)  # elimina encabezados tipo # Título
+    text = re.sub(r">+\s*", "", text)      # elimina citas tipo > texto
+    text = text.replace("•", "")
+    return text.strip()
+
+
 # === Funciones específicas ===
 
 def chat_with_ai(message: str) -> str:
@@ -93,7 +109,8 @@ def chat_with_ai(message: str) -> str:
     Chat natural con tono profesional y empático.
     """
     prompt = f"Responde de forma natural, profesional y amable al siguiente mensaje:\n\n{message}"
-    return get_completion(prompt, temperature=0.7)
+    response = get_completion(prompt, temperature=0.7)
+    return clean_markdown(response)
 
 
 import re
@@ -127,17 +144,8 @@ Instrucciones:
     texto_generado = get_completion(prompt_base, temperature=0.6)
 
     # === Postprocesamiento avanzado ===
-    # Elimina ** y * en cualquier parte
-    texto_limpio = re.sub(r"(\*\*|\*)", "", texto_generado)
-    # Elimina guiones que empiecen línea o seguidos de espacio
-    texto_limpio = re.sub(r"(?m)^\s*-\s*", "", texto_limpio)
-    # Limpia saltos de línea repetidos
-    texto_limpio = re.sub(r"\n{3,}", "\n\n", texto_limpio)
-
+    texto_limpio = clean_markdown(texto_generado)
     return texto_limpio.strip()
-
-
-
 
 
 
@@ -153,4 +161,5 @@ def recommend_vacancies(user_info: str) -> str:
     Basándote en ello, sugiere 3 vacantes o retos que encajen con sus habilidades,
     explicando brevemente por qué podrían interesarle. Usa formato numerado y tono profesional.
     """
-    return get_completion(prompt, temperature=0.8)
+    response = get_completion(prompt, temperature=0.8)
+    return clean_markdown(response)

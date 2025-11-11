@@ -1,25 +1,43 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .openai_client import get_completion  # Importa desde tu archivo utils.py
+import re
+from .openai_client import get_completion  # Usa tu cliente existente
+
 
 # 💬 CHAT INTERACTIVO
 @csrf_exempt
 def chat_view(request):
     """
     Vista del chat con IA (AJAX).
-    Responde a mensajes del usuario en tiempo real.
+    Limpia el formato Markdown (**texto**, *texto*, listas, etc.)
+    y mantiene el prefijo "IA:" con texto plano.
     """
     if request.method == "POST":
         user_message = request.POST.get("message", "").strip()
         if not user_message:
             return JsonResponse({"response": "⚠️ Por favor escribe algo antes de enviar."})
 
+        # Prompt para el modelo
         prompt = f"Responde de forma conversacional y profesional a este mensaje:\n{user_message}"
-        response = get_completion(prompt)
-        return JsonResponse({"response": response})
-    
-    return render(request, "ai_module/chat.html")  
+        raw_response = get_completion(prompt)
+
+        # 🔹 Limpiar formato Markdown y símbolos
+        clean_response = re.sub(r"\*\*(.*?)\*\*", r"\1", raw_response)   # quitar **negritas**
+        clean_response = re.sub(r"\*(.*?)\*", r"\1", clean_response)     # quitar *cursivas*
+        clean_response = re.sub(r"\d+\.\s*", "", clean_response)         # quitar "1. ", "2. ", etc.
+        clean_response = re.sub(r"[-•]\s*", "", clean_response)          # quitar viñetas
+        clean_response = re.sub(r"\n+", "\n", clean_response)            # normalizar saltos de línea
+        clean_response = clean_response.strip()
+
+        # Asegurar prefijo "IA:"
+        if not clean_response.startswith("IA:"):
+            clean_response = f"IA: {clean_response}"
+
+        return JsonResponse({"response": clean_response})
+
+    # Si es GET, renderiza el HTML del chat
+    return render(request, "ai_module/chat.html")
 
 
 # ✍️ GENERADOR / ANALIZADOR DE TEXTO
