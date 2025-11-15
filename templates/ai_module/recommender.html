@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="text-center mb-3">🎯 Recomendador de Vacantes / Retos</h2>
+
+  <form method="POST" class="card p-3 shadow-sm">
+    {% csrf_token %}
+    <textarea name="user_info" class="form-control mb-3" rows="5"
+              placeholder="Describe tus habilidades, intereses o experiencia...">{{ user_info }}</textarea>
+    <button class="btn btn-success">Obtener recomendaciones</button>
+  </form>
+
+  {% if response %}
+  <div class="card p-3 mt-3 shadow-sm bg-light">
+    <h5>Sugerencias personalizadas:</h5>
+    <p>{{ response }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="text-center mb-3">💬 Asistente IA</h2>
+  <div id="chat-box" class="border rounded p-3 mb-3" style="height: 400px; overflow-y: auto; background: #f8f9fa;"></div>
+  <form id="chat-form" class="d-flex">
+    <input id="message" class="form-control me-2" placeholder="Escribe tu mensaje..." required>
+    <button class="btn btn-primary" type="submit">Enviar</button>
+  </form>
+</div>
+
+<script>
+document.getElementById("chat-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById("message").value;
+  const box = document.getElementById("chat-box");
+  box.innerHTML += `<div><b>Tú:</b> ${msg}</div>`;
+  const resp = await fetch("", {
+    method: "POST",
+    headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/x-www-form-urlencoded" },
+    body: `message=${encodeURIComponent(msg)}`
+  });
+  const data = await resp.json();
+  box.innerHTML += `<div><b>IA:</b> ${data.response}</div>`;
+  document.getElementById("message").value = "";
+  box.scrollTop = box.scrollHeight;
+});
+</script>
+{% endblock %}

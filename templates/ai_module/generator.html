@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="text-center mb-3">✍️ Generador / Analizador de Texto</h2>
+
+  <form method="POST" class="card p-3 shadow-sm">
+    {% csrf_token %}
+    <textarea class="form-control mb-3" name="input_text" rows="5" placeholder="Pega aquí tu texto...">{{ input_text }}</textarea>
+    <select class="form-select mb-3" name="mode">
+      <option value="resumen" {% if mode == 'resumen' %}selected{% endif %}>Resumir texto</option>
+      <option value="mejora" {% if mode == 'mejora' %}selected{% endif %}>Mejorar redacción</option>
+      <option value="descripcion" {% if mode == 'descripcion' %}selected{% endif %}>Generar descripción de vacante</option>
+    </select>
+    <button class="btn btn-primary">Procesar</button>
+  </form>
+
+  {% if response %}
+  <div class="card p-3 mt-3 shadow-sm bg-light">
+    <h5>Resultado:</h5>
+    <p>{{ response }}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
